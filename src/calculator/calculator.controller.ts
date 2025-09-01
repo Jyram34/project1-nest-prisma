@@ -1,4 +1,4 @@
-import { Body, Controller, Post,UsePipes, ValidationPipe } from '@nestjs/common';
+import { Body, Controller, Post, Param, UsePipes, ValidationPipe, BadRequestException } from '@nestjs/common';
 import { CalculatorService } from './calculator.service';
 import { CalculatorDto } from 'src/dtos/calculator.dto';
 
@@ -8,27 +8,25 @@ import { CalculatorDto } from 'src/dtos/calculator.dto';
 export class CalculatorController {
     constructor(private readonly calculatorService:CalculatorService){}
 
-    @Post('add')
+    @Post(':operation')
     @UsePipes(new ValidationPipe())
-    add(@Body() body: CalculatorDto): number{
-        return this.calculatorService.add(Number(body.a), Number(body.b));
-    }
+    calculute(
+        @Param('operation') operation: string,
+        @Body() body: CalculatorDto,
+    ): number {
+        const { a, b } = body;
 
-    @Post('subtract')
-    @UsePipes(new ValidationPipe())
-    subtract(@Body() body: CalculatorDto): number{
-        return this.calculatorService.subtract(Number(body.a), Number(body.b));
-    }
-
-    @Post('multiply')
-    @UsePipes(new ValidationPipe())
-    multiply(@Body() body: CalculatorDto): number{
-        return this.calculatorService.multiply(Number(body.a), Number(body.b));
-    }
-
-    @Post('divide')
-    @UsePipes(new ValidationPipe())
-    divide(@Body() body: CalculatorDto): number{
-        return this.calculatorService.divide(Number(body.a), Number(body.b));
+        switch(operation.toLowerCase()){
+            case 'add':
+                return this.calculatorService.add(Number(a), Number(b));
+            case 'subtract':
+                return this.calculatorService.subtract(Number(a), Number(b));
+            case 'multiply':
+                return this.calculatorService.multiply(Number(a), Number(b));
+            case 'divide':
+                return this.calculatorService.divide(Number(a), Number(b));
+            default:
+                throw new BadRequestException('Operacion no soportada');
+        }
     }
 }

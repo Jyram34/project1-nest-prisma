@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class CalculatorService {
@@ -17,7 +17,7 @@ export class CalculatorService {
     //Funcion para dividir dos numeros
     divide(a:number, b:number): number{
         if(b === 0){
-            throw new Error('No se puede dividir entre cero');
+            throw new BadRequestException('No se puede dividir entre cero');
         }
         return a / b;
     }
