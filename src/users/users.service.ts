@@ -3,20 +3,37 @@ import { CreateUserDto } from 'src/dtos/create-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from 'src/dtos/update-user.dto';
+import { MailService } from 'src/mail/mail.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private mailService: MailService,
+  ) {}
 
   async createUser(CreateUserDto: CreateUserDto) {
     const hashedPassword = await bcrypt.hash(CreateUserDto.password, 10);
 
-    return this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         ...CreateUserDto,
         password: hashedPassword,
       },
     });
+
+    await this.mailService.sendMail(
+      user.email,
+      'Bienvenido a Whitecat!!!',
+      `Hola ${user.firstName || ''}, gracias por registrarte en Whitecat.`,
+      `<h2>Hola ${user.firstName || ''}!</h2><p>Gracias por unirte a <b>Whitecat</b>. 🚀</p>`,
+    );
+
+    return {
+      message:'Usuario creado con extio y correo enviado',
+      data: user,
+    };
+
   }
   async findAll() {
     return this.prisma.user.findMany({
